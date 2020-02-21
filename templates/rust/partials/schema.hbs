@@ -5,55 +5,69 @@
 {{~#if [$ref]~}}
 pub type {{camelcase name suffix}} = {{>data_type required="true"}};
 {{~else}}
-    {{~#if (eq type "object")~}}
-        {{~#if properties~}}
-            #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-            pub struct {{camelcase name suffix}} {
-            {{~#each properties}}
-                #[serde(rename = "{{snakecase @key}}")]
-                {{~#if (has ../../required @key)}}
-                pub {{sanitize (snakecase @key)}}: {{>data_type name=(camelcase ../name @key) required="true"}},
-                {{~else}}
-                #[serde(skip_serializing_if = "Option::is_none")]
-                pub {{sanitize (snakecase @key)}}: {{>data_type name=(camelcase ../name @key)}},
-                {{~/if}}
-            {{~/each}}
-            {{~#if additionalProperties}}
-                pub properties: std::collections::HashMap<&str, {{camelcase name suffix "properties"}}>,
-            {{~/if}}
-            }
-        {{~else~}}
-            {{~#if additionalProperties}}
-                pub type {{camelcase name suffix}} = std::collections::HashMap<String, {{camelcase name suffix "properties"}}>;
-            {{~/if}}
+    {{~#if oneOf}}
+        #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+        {{~#if discriminator}}
+        #[serde(tag = "{{discriminator.properName}}")]
+        {{~else}}
+        #[serde(untagged)]
         {{~/if}}
-    {{~else~}}
-        {{~#if (and (eq type "string") enum (not format))}}
-            #[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq, Serialize)]
-            pub enum {{camelcase ../name @key suffix}} {
-                {{~#each enum}}
-                #[serde(rename = "{{this}}")] 
-                {{camelcase this}},
+        pub enum {{camelcase name "OneOf"}}  {
+            {{~#each oneOf}}
+                Value{{@index}}({{>data_type name=(camelcase ../name @key) required="true"}}),
+            {{~/each}}
+        }
+    {{~else}}
+        {{~#if (eq type "object")~}}
+            {{~#if properties~}}
+                #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+                pub struct {{camelcase name suffix}} {
+                {{~#each properties}}
+                    #[serde(rename = "{{snakecase @key}}")]
+                    {{~#if (or (has ../../required @key) oneOf)}}
+                    pub {{sanitize (snakecase @key)}}: {{>data_type name=(camelcase ../name @key) required="true"}},
+                    {{~else}}
+                    #[serde(skip_serializing_if = "Option::is_none")]
+                    pub {{sanitize (snakecase @key)}}: {{>data_type name=(camelcase ../name @key)}},
+                    {{~/if}}
                 {{~/each}}
-            }
-
-            impl std::fmt::Display for {{camelcase ../name @key suffix}} {
-                fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                    write!(f, "{}",
-                        match self {
-                            {{~#each enum}}
-                            {{camelcase ../name @key suffix}}::{{camelcase this}} => "{{this}}",
-                            {{~/each}}
-                        }
-                    )
+                {{~#if additionalProperties}}
+                    pub properties: std::collections::HashMap<&str, {{camelcase name suffix "properties"}}>,
+                {{~/if}}
                 }
-            }
-
+            {{~else~}}
+                {{~#if additionalProperties}}
+                    pub type {{camelcase name suffix}} = std::collections::HashMap<String, {{camelcase name suffix "properties"}}>;
+                {{~/if}}
+            {{~/if}}
         {{~else~}}
-            pub type {{camelcase name suffix}} =
-                {{~#if type}} {{>data_type required="true"}}
-                {{~else}} ()
-                {{~/if}};
-        {{/if}}
+            {{~#if (and (eq type "string") enum (not format))}}
+                #[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq, Serialize)]
+                pub enum {{camelcase ../name @key suffix}} {
+                    {{~#each enum}}
+                    #[serde(rename = "{{this}}")]
+                    {{camelcase this}},
+                    {{~/each}}
+                }
+
+                impl std::fmt::Display for {{camelcase ../name @key suffix}} {
+                    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(f, "{}",
+                            match self {
+                                {{~#each enum}}
+                                {{camelcase ../name @key suffix}}::{{camelcase this}} => "{{this}}",
+                                {{~/each}}
+                            }
+                        )
+                    }
+                }
+
+            {{else}}
+                pub type {{camelcase name suffix}} =
+                    {{~#if type}} {{>data_type required="true"}}
+                    {{~else}} ()
+                    {{~/if}};
+            {{/if}}
+        {{~/if}}
     {{~/if}}
 {{~/if}}

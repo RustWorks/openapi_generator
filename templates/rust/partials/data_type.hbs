@@ -1,3 +1,6 @@
+{{~#if oneOf}}
+{{camelcase name "OneOf"}}
+{{~else~}}
 {{#unless required}}Option<{{/unless~}}
 {{~#if (eq type "string")}}
     {{~#if (eq format "binary")~}}
@@ -41,3 +44,4 @@ Vec<{{~>data_type name=(camelcase name "item") required="true" items}}>
 {{camelcase name}}
 {{~/if}}
 {{~#unless required}}>{{/unless}}
+{{~/if}}
