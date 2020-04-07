@@ -12,3 +12,5 @@ pub mod server;
 pub use models::*;
 
 pub const VERSION: &str = "{{info.version}}";
+
+pub use openapi_schemas::components;

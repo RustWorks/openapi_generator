@@ -1,0 +1,13 @@
+[package]
+name = "{{snakecase info.title}}_schemas"
+version = "0.1.0"
+authors = ["Gérald Lelong <gerald.lelong@easymov.fr>"]
+edition = "2018"
+
+[lib]
+name = "{{snakecase info.title}}_schemas"
+path = "lib.rs"
+
+[dependencies]
+serde = { version = "1.0.104", features = ["derive"] }
+

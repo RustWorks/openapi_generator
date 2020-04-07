@@ -1,6 +1,6 @@
 {{~#if operationId}}
 pub mod {{snakecase operationId}} {
-    use super::components;
+    use crate::components;
     use serde::{Deserialize, Serialize};
 
     {{#each parameters}}
