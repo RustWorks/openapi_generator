@@ -1,4 +1,5 @@
 {{#unless required}}Option<{{/unless~}}
+{{#if this.nullable}}Option<{{/if~}}
 {{~#if (eq type "string")}}
     {{~#if (eq format "binary")~}}
 Vec<u8>
@@ -40,4 +41,5 @@ Vec<{{~>data_type name=(camelcase name "item") required="true" items}}>
 {{~#if (eq type "object")~}}
 {{camelcase name}}
 {{~/if}}
+{{~#if this.nullable}}>{{/if}}
 {{~#unless required}}>{{/unless}}
